@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Comercial | Controle Multicidades Clean</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="text-gray-800 h-screen flex flex-col antialiased overflow-hidden">
+
+    <header class="w-full bg-white border-b border-gray-200 px-6 py-3.5 shrink-0 shadow-xs">
+        <div class="w-full flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="p-2 bg-blue-50 text-blue-600 rounded-xl border border-blue-100 shadow-2xs">
+                    <i data-lucide="line-chart" class="w-5.5 h-5.5"></i>
+                </div>
+                <div>
+                    <h1 class="text-base font-bold text-gray-900 tracking-tight">Acompanhamento de Vendas & Rotas Comerciais</h1>
+                    <p class="text-[11px] text-gray-500 flex items-center gap-1 mt-0.5">
+                        Mapeamento de Indicadores Médios — Raio Logístico com Centro em: <span class="text-blue-600 font-semibold">Itaberaba - BA</span>
+                    </p>
+                </div>
+            </div>
+            <div class="bg-emerald-50 px-2.5 py-1 rounded-lg text-[11px] font-semibold text-emerald-700 border border-emerald-200 flex items-center gap-1.5 shadow-2xs">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                Dados Integrados Automaticamente
+            </div>
+        </div>
+    </header>
+
+    <div class="flex-1 w-full flex overflow-hidden">
+        
+        <aside class="w-80 bg-white border-r border-gray-200 p-5 flex flex-col gap-4 shrink-0 h-full overflow-hidden">
+            <div class="flex items-center justify-between border-b border-gray-100 pb-2 shrink-0">
+                <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider flex items-center gap-2">
+                    <i data-lucide="filter" class="w-3.5 h-3.5 text-blue-600"></i> Filtragem Avançada
+                </h2>
+                <button onclick="limparTodosFiltros()" class="text-xs text-blue-600 hover:text-blue-700 font-semibold transition-colors">Limpar Filtros</button>
+            </div>
+
+            <div class="space-y-1.5 shrink-0">
+                <label class="text-xs font-bold text-gray-700 flex items-center gap-1.5">
+                    <i data-lucide="calendar" class="w-3.5 h-3.5 text-gray-400"></i> Ano Calendário
+                </label>
+                <div id="filter-ano-container" class="grid grid-cols-2 gap-2">
+                    </div>
+            </div>
+
+            <div class="space-y-1.5 shrink-0">
+                <label class="text-xs font-bold text-gray-700 flex items-center gap-1.5">
+                    <i data-lucide="calendar-days" class="w-3.5 h-3.5 text-gray-400"></i> Meses Operacionais
+                </label>
+                <div id="filter-mes-container" class="max-h-28 overflow-y-auto border border-gray-200 rounded-xl p-2 space-y-1.5 custom-scrollbar bg-gray-50/50">
+                    </div>
+            </div>
+
+            <div class="space-y-1.5 bg-slate-50/80 p-2.5 rounded-xl border border-gray-200/60 shrink-0">
+                <div class="flex items-center justify-between">
+                    <label class="text-xs font-bold text-gray-700 flex items-center gap-1.5">
+                        <i data-lucide="milestone" class="w-3.5 h-3.5 text-blue-500"></i> Distância Máxima
+                    </label>
+                    <span id="txt-distancia-val" class="text-xs font-mono font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">Todos KM</span>
+                </div>
+                <input type="range" id="input-range-km" min="0" max="600" step="10" value="600" oninput="alterarFiltroKm(this.value)"
+                    class="w-full h-1.5 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-blue-600">
+                <div class="flex justify-between text-[10px] text-gray-400 font-medium font-mono px-0.5">
+                    <span>0 KM</span>
+                    <span>300 KM</span>
+                    <span>600+ KM</span>
+                </div>
+            </div>
+
+            <div class="flex-1 flex flex-col min-h-0 space-y-1.5">
+                <label class="text-xs font-bold text-gray-700 flex items-center gap-1.5 shrink-0">
+                    <i data-lucide="map" class="w-3.5 h-3.5 text-gray-400"></i> Seleção de Municípios
+                </label>
+                <div class="relative shrink-0">
+                    <i data-lucide="search" class="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400"></i>
+                    <input type="text" id="inputBuscaCidade" placeholder="Buscar cidade específica..." 
+                        class="w-full pl-8 pr-3 py-1.5 text-xs bg-white border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 transition-colors">
+                </div>
+                <div id="filter-cidade-container" class="flex-1 overflow-y-auto border border-gray-200 rounded-xl p-2.5 space-y-1.5 custom-scrollbar bg-gray-50/50">
+                    </div>
+            </div>
+        </aside>
+
+        <main class="flex-1 bg-slate-50 p-5 flex flex-col gap-5 h-full overflow-hidden">
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 shrink-0">
+                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-2xs flex items-center justify-between border-l-4 border-l-emerald-500">
+                    <div>
+                        <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Faturamento Médio Mensal (Filtro)</span>
+                        <h3 class="text-xl font-bold mt-0.5 text-gray-900 tracking-tight" id="kpi-media-faturamento">R$ 0,00</h3>
+                    </div>
+                    <div class="p-2.5 bg-emerald-50 text-emerald-600 rounded-xl"><i data-lucide="dollar-sign" class="w-5 h-5"></i></div>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-2xs flex items-center justify-between border-l-4 border-l-blue-500">
+                    <div>
+                        <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Positivação Média Mensal (Filtro)</span>
+                        <h3 class="text-xl font-bold mt-0.5 text-gray-900 tracking-tight" id="kpi-media-positivacao">0 PDVs</h3>
+                    </div>
+                    <div class="p-2.5 bg-blue-50 text-blue-600 rounded-xl"><i data-lucide="users" class="w-5 h-5"></i></div>
+                </div>
+
+                <div class="bg-white p-4 rounded-xl border border-gray-200 shadow-2xs flex items-center justify-between border-l-4 border-l-purple-500">
+                    <div>
+                        <span class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Cidades Ativas na Visão</span>
+                        <h3 class="text-xl font-bold mt-0.5 text-gray-900 tracking-tight" id="kpi-contagem-cidades">0</h3>
+                    </div>
+                    <div class="p-2.5 bg-purple-50 text-purple-600 rounded-xl"><i data-lucide="navigation" class="w-5 h-5"></i></div>
+                </div>
+            </div>
+
+            <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden flex flex-col flex-1 min-h-0">
+                <div class="px-5 py-3 border-b border-gray-200 bg-white flex items-center justify-between shrink-0">
+                    <h2 class="text-xs font-bold text-gray-800 flex items-center gap-2">
+                        <i data-lucide="layout-list" class="w-4 h-4 text-blue-600"></i> Detalhamento Estruturado (Ordem de Maior Faturamento)
+                    </h2>
+                    <span class="text-[11px] font-medium text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full border border-slate-200" id="info-resultados-count">
+                        0 municípios
+                    </span>
+                </div>
+
+                <div class="overflow-y-auto flex-1 min-h-0 custom-scrollbar">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="border-b border-gray-200 bg-gray-50/90 text-[11px] font-bold text-gray-500 uppercase tracking-wider sticky top-0 z-10 backdrop-blur-xs">
+                                <th class="px-5 py-2.5 bg-gray-50/90">Cidade</th>
+                                <th class="px-5 py-2.5 text-right bg-gray-50/90">Faturamento Acumulado</th>
+                                <th class="px-5 py-2.5 text-right bg-blue-50/80 text-blue-950 font-extrabold shadow-2xs">Média Mensal</th>
+                                <th class="px-5 py-2.5 text-center bg-gray-50/90">Clientes Positivados</th>
+                                <th class="px-5 py-2.5 text-right bg-gray-50/90">Distância p/ Itaberaba</th>
+                            </tr>
+                        </thead>
+                        <tbody id="table-view-body" class="divide-y divide-gray-100 text-xs text-gray-700">
+                            </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="dados_consolidados.js"></script>
+
+    <script>
+        let filtrosAtivos = { anos: [], meses: [], cidades: [], kmMaximo: 600 };
+
+        const formatarMoedaBRL = (valor) => {
+            return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
+        };
+
+        function inicializarDashboardCompleto() {
+            lucide.createIcons();
+            
+            if (typeof DATA_VENDAS_CONSOLIDADA === 'undefined') {
+                document.getElementById('table-view-body').innerHTML = `
+                    <tr><td colspan="5" class="text-center py-12 text-red-500 font-semibold">
+                        ⚠️ Arquivo 'dados_consolidados.js' não foi localizado. Execute o script Python primeiro.
+                    </td></tr>`;
+                return;
+            }
+
+            gerarComponentesInterfaceFiltros();
+            filtrarERenderizarLayout();
+        }
+
+        function gerarComponentesInterfaceFiltros() {
+            const listaAnos = [...new Set(DATA_VENDAS_CONSOLIDADA.map(d => d.ano))].sort();
+            const listaMeses = [...new Set(DATA_VENDAS_CONSOLIDADA.map(d => d.mes))].sort((a,b) => {
+                const ordem = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+                return ordem.indexOf(a) - ordem.indexOf(b);
+            });
+            const listaCidades = [...new Set(DATA_VENDAS_CONSOLIDADA.map(d => d.cidade))].sort();
+
+            const containerAno = document.getElementById('filter-ano-container');
+            containerAno.innerHTML = '';
+            listaAnos.forEach(ano => {
+                containerAno.innerHTML += `
+                    <label class="flex items-center gap-2 p-1.5 bg-gray-50 border border-gray-200 rounded-lg cursor-pointer text-xs font-semibold select-none hover:bg-gray-100 transition-colors">
+                        <input type="checkbox" value="${ano}" onchange="atualizarFiltroSelecao('anos', '${ano}')" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5">
+                        ${ano}
+                    </label>
+                `;
+            });
+
+            const containerMes = document.getElementById('filter-mes-container');
+            containerMes.innerHTML = '';
+            listaMeses.forEach(mes => {
+                containerMes.innerHTML += `
+                    <label class="flex items-center gap-2 p-1 text-xs font-medium text-gray-700 cursor-pointer select-none hover:text-blue-600 transition-colors">
+                        <input type="checkbox" value="${mes}" onchange="atualizarFiltroSelecao('meses', '${mes}')" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5">
+                        ${mes}
+                    </label>
+                `;
+            });
+
+            renderizarListaCidadesFiltroLateral(listaCidades);
+        }
+
+        function renderizarListaCidadesFiltroLateral(cidades) {
+            const containerCidade = document.getElementById('filter-cidade-container');
+            containerCidade.innerHTML = '';
+            cidades.forEach(cidade => {
+                const estaMarcado = filtrosAtivos.cidades.includes(cidade) ? 'checked' : '';
+                containerCidade.innerHTML += `
+                    <label class="flex items-center gap-2 p-1 text-xs font-medium text-gray-700 cursor-pointer select-none hover:text-blue-600 transition-colors">
+                        <input type="checkbox" value="${cidade}" ${estaMarcado} onchange="atualizarFiltroSelecao('cidades', '${cidade}')" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500 w-3.5 h-3.5">
+                        ${cidade}
+                    </label>
+                `;
+            });
+        }
+
+        document.getElementById('inputBuscaCidade').addEventListener('input', (e) => {
+            const textoBusca = e.target.value.toLowerCase().trim();
+            const todasCidades = [...new Set(DATA_VENDAS_CONSOLIDADA.map(d => d.cidade))].sort();
+            const filtradas = todasCidades.filter(c => c.toLowerCase().includes(textoBusca));
+            renderizarListaCidadesFiltroLateral(filtradas);
+        });
+
+        function atualizarFiltroSelecao(categoria, valor) {
+            const posicao = filtrosAtivos[categoria].indexOf(valor);
+            if (posicao > -1) {
+                filtrosAtivos[categoria].splice(posicao, 1);
+            } else {
+                filtrosAtivos[categoria].push(valor);
+            }
+            filtrarERenderizarLayout();
+        }
+
+        function alterarFiltroKm(valor) {
+            filtrosAtivos.kmMaximo = parseInt(valor);
+            const txt = document.getElementById('txt-distancia-val');
+            if (filtrosAtivos.kmMaximo >= 600) {
+                txt.innerText = "Todos KM";
+            } else {
+                txt.innerText = `Até ${filtrosAtivos.kmMaximo} KM`;
+            }
+            filtrarERenderizarLayout();
+        }
+
+        function limparTodosFiltros() {
+            filtrosAtivos = { anos: [], meses: [], cidades: [], kmMaximo: 600 };
+            document.querySelectorAll('aside input[type="checkbox"]').forEach(c => c.checked = false);
+            document.getElementById('inputBuscaCidade').value = '';
+            document.getElementById('input-range-km').value = 600;
+            document.getElementById('txt-distancia-val').innerText = "Todos KM";
+            gerarComponentesInterfaceFiltros();
+            filtrarERenderizarLayout();
+        }
+
+        function filtrarERenderizarLayout() {
+            let baseFiltrada = DATA_VENDAS_CONSOLIDADA.filter(item => {
+                const matchesAno = filtrosAtivos.anos.length === 0 || filtrosAtivos.anos.includes(item.ano);
+                const matchesMes = filtrosAtivos.meses.length === 0 || filtrosAtivos.meses.includes(item.mes);
+                const matchesCidade = filtrosAtivos.cidades.length === 0 || filtrosAtivos.cidades.includes(item.cidade);
+                
+                let matchesKm = true;
+                if (filtrosAtivos.kmMaximo < 600) {
+                    if (typeof item.distancia_km === 'number') {
+                        matchesKm = item.distancia_km <= filtrosAtivos.kmMaximo;
+                    } else {
+                        matchesKm = false;
+                    }
+                }
+                
+                return matchesAno && matchesMes && matchesCidade && matchesKm;
+            });
+
+            let mesesUnicosSet = new Set();
+            let totalFaturamentoFiltro = 0;
+            let totalPositivacaoFiltro = 0;
+
+            let dicionarioAgrupado = {};
+            baseFiltrada.forEach(item => {
+                mesesUnicosSet.add(`${item.ano}-${item.mes}`);
+                totalFaturamentoFiltro += item.sell_out;
+                totalPositivacaoFiltro += item.positivacao;
+
+                if (!dicionarioAgrupado[item.cidade]) {
+                    dicionarioAgrupado[item.cidade] = {
+                        cidade: item.cidade,
+                        sell_out_acumulado: 0,
+                        positivacao_acumulada: 0,
+                        distancia_km: item.distancia_km,
+                        linhas_de_tempo: 0
+                    };
+                }
+                dicionarioAgrupado[item.cidade].sell_out_acumulado += item.sell_out;
+                dicionarioAgrupado[item.cidade].positivacao_acumulada += item.positivacao;
+                dicionarioAgrupado[item.cidade].linhas_de_tempo += 1;
+            });
+
+            let resultadoFinalCidades = Object.values(dicionarioAgrupado).map(c => ({
+                cidade: c.cidade,
+                faturamento_total: c.sell_out_acumulado,
+                media_faturamento_mensal: c.sell_out_acumulado / c.linhas_de_tempo,
+                media_positivacao: Math.round(c.positivacao_acumulada / c.linhas_de_tempo),
+                distancia_km: c.distancia_km
+            }));
+
+            resultadoFinalCidades.sort((a, b) => b.faturamento_total - a.faturamento_total);
+
+            const totalMesesPeriodo = mesesUnicosSet.size || 1; 
+
+            if (resultadoFinalCidades.length > 0) {
+                document.getElementById('kpi-media-faturamento').innerText = formatarMoedaBRL(totalFaturamentoFiltro / totalMesesPeriodo);
+                document.getElementById('kpi-media-positivacao').innerText = `${Math.round(totalPositivacaoFiltro / totalMesesPeriodo)} PDVs`;
+            } else {
+                document.getElementById('kpi-media-faturamento').innerText = "R$ 0,00";
+                document.getElementById('kpi-media-positivacao').innerText = "0 PDVs";
+            }
+            
+            document.getElementById('kpi-contagem-cidades').innerText = resultadoFinalCidades.length;
+            document.getElementById('info-resultados-count').innerText = `${resultadoFinalCidades.length} municípios filtrados`;
+
+            const tbody = document.getElementById('table-view-body');
+            tbody.innerHTML = '';
+
+            if (resultadoFinalCidades.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="5" class="text-center py-12 text-gray-400 font-medium bg-gray-50/20">Nenhum registro comercial corresponde aos filtros.</td></tr>`;
+                return;
+            }
+
+            resultadoFinalCidades.forEach(item => {
+                const tr = document.createElement('tr');
+                tr.className = 'hover:bg-blue-50/30 transition-colors border-b border-gray-100/80';
+
+                let tagDistanciaHtml = '';
+                if (item.distancia_km === 0 || item.cidade.toUpperCase() === "ITABERABA") {
+                    tagDistanciaHtml = `<span class="px-2 py-0.5 text-[11px] font-bold rounded-md bg-blue-50 text-blue-600 border border-blue-100">Cidade Polo</span>`;
+                } else if (typeof item.distancia_km === 'number') {
+                    tagDistanciaHtml = `<span class="font-mono text-gray-700 font-semibold">${item.distancia_km} KM</span>`;
+                } else {
+                    tagDistanciaHtml = `<span class="text-[11px] text-amber-600 bg-amber-50 px-2 py-0.5 rounded border border-amber-200">${item.distancia_km}</span>`;
+                }
+
+                tr.innerHTML = `
+                    <td class="px-5 py-2 font-semibold text-gray-900 tracking-tight">${item.cidade}</td>
+                    <td class="px-5 py-2 text-right font-mono text-gray-600 font-medium">${formatarMoedaBRL(item.faturamento_total)}</td>
+                    <td class="px-5 py-2 text-right bg-blue-50/30 font-semibold text-blue-900 border-x border-blue-100/30">
+                        <div class="font-mono font-bold">${formatarMoedaBRL(item.media_faturamento_mensal)}</div>
+                    </td>
+                    <td class="px-5 py-2 text-center">
+                        <span class="bg-gray-100 text-gray-700 px-2 py-0.5 rounded-md border border-gray-200/60 text-[10px] font-bold">
+                            ${item.media_positivacao} PDVs
+                        </span>
+                    </td>
+                    <td class="px-5 py-2 text-right">${tagDistanciaHtml}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        window.onload = inicializarDashboardCompleto;
+    </script>
+</body>
+</html>
